@@ -1,0 +1,6 @@
+{
+  "name": "plotme-api",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-09",
+  "workers_dev": true
+}
