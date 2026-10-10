@@ -2,5 +2,8 @@
   "name": "plotme-api",
   "main": "worker.js",
   "compatibility_date": "2026-10-09",
-  "workers_dev": true
+  "workers_dev": true,
+  "vars": {
+    "ALLOWED_ORIGIN": "https://rec19dantas.github.io"
+  }
 }
