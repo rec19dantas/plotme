@@ -8,6 +8,8 @@
  *   PLOTME_TEST_KEY   (Secret) - codigo aleatorio >= 24 caracteres
  *   ALLOWED_ORIGIN    (Text)   - https://rec19dantas.github.io
  *
+ * Controle de custos: /generate exige ENABLE_PAID_GENERATION=true
+ * além das chaves secretas. Em modo grátis, mantenha desativado.
  * IMPORTANTE: nao salve as credenciais neste arquivo!
  */
 const RUNWAY = 'https://api.dev.runwayml.com';
@@ -76,6 +78,10 @@ export default {
     if(request.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
     try{
       const url=new URL(request.url);
+      // Status público e inofensivo para o GitHub Pages. Nunca expõe segredos.
+      if(url.pathname==='/status' && request.method==='GET'){
+        return response({online:true,service:'PLOTME API',mode:'demo',videoGenerationEnabled:false},200,allowedOrigin);
+      }
       const token=request.headers.get('X-Plotme-Test-Key')||'';
       if(!env.PLOTME_TEST_KEY || env.PLOTME_TEST_KEY.length<24 || !env.RUNWAY_API_KEY){
         return response({error:'Configure RUNWAY_API_KEY e PLOTME_TEST_KEY (mínimo 24 caracteres) nos segredos do Worker.'},503,allowedOrigin);
@@ -83,6 +89,7 @@ export default {
       if(token!==env.PLOTME_TEST_KEY){return response({error:'Código beta inválido.'},401,allowedOrigin);}
       if(url.pathname==='/health'&&request.method==='GET')return response({ready:true,service:'PLOTME IA beta',duration:5},200,allowedOrigin);
       if(url.pathname==='/generate'&&request.method==='POST'){
+        if(env.ENABLE_PAID_GENERATION!=='true')return response({error:'Geração por IA desativada no modo gratuito. Nenhum crédito será consumido.'},403,allowedOrigin);
         const type=request.headers.get('Content-Type')||'';
         if(!type.startsWith('application/json'))return response({error:'Envie JSON.'},415,allowedOrigin);
         const length=Number(request.headers.get('Content-Length'));
